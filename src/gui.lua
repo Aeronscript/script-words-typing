@@ -1,4 +1,4 @@
--- gui.lua - interface FTW Ultra Pro (PC + mobile clavier virtuel)
+﻿-- gui.lua - interface FTW Ultra Pro (PC + mobile clavier virtuel)
 local PG = game.Players.LocalPlayer:WaitForChild("PlayerGui")
 local CORE = _G.CORE
 local DICT = _G.DICT
@@ -15,7 +15,7 @@ frame.BackgroundColor3 = Color3.fromRGB(12, 16, 26)
 frame.BorderSizePixel = 1
 frame.BorderColor3 = Color3.fromRGB(80, 180, 255)
 frame.Active = true
-frame.Draggable = false
+frame.Draggable = true
 frame.Parent = gui
 
 local title = Instance.new("TextLabel")
@@ -26,8 +26,6 @@ title.Text = "FTW Ultra Pro"
 title.Font = Enum.Font.SourceSansBold
 title.TextSize = 15
 title.Parent = frame
-title.Active = true
-title.Draggable = true
 
 local status = Instance.new("TextLabel")
 status.Size = UDim2.new(1, 0, 0, 20)
@@ -84,7 +82,9 @@ local btnMoney = Instance.new("TextButton")
 btnMoney.Size = UDim2.new(1, 0, 0, 24)
 btnMoney.Position = UDim2.new(0, 0, 0, 90)
 btnMoney.BackgroundColor3 = Color3.fromRGB(60, 50, 20)
-btnMoney.TextColor3 = Color3.fromRGB(255, 230, 120)
+
+btnMoney.Active = true
+btnMoney.AutoButtonColor = true
 btnMoney.Text = "ARGENT ILLIMITE: OFF"
 btnMoney.Font = Enum.Font.Code
 btnMoney.TextSize = 13
@@ -126,6 +126,8 @@ local function refresh()
         btn.Text = w
         btn.Font = Enum.Font.Code
         btn.TextSize = 12
+        btn.Active = true
+        btn.AutoButtonColor = true
         btn.Parent = list
         -- PC + mobile: tape le mot choisi (clavier virtuel inclus)
         btn.MouseButton1Click:Connect(function()
@@ -152,3 +154,4 @@ task.spawn(function()
 end)
 
 print("[FTW] GUI pret")
+
