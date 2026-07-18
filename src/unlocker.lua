@@ -1,21 +1,19 @@
 --[[
-  FTW Pet Unlocker - debloque TOUS les pets sur n'importe quel compte
+  FTW Pet Unlocker - debloque TOUS les pets sur n''importe quel compte
   Fonctionne pour un compte avec 0 pet ou deja quelques-uns.
   Methode:
     1. Exploit cash (purchaseEgg avec quantite negative)
     2. unlockEgg pour chaque oeuf
     3. buyRestrictedPet pour les pets a DirectPrice (Void, Rich, etc.)
-    4. purchaseEgg en boucle pour les pets sans DirectPrice + Furry
-  Usage: execute via PocketMCP (Xeno). Le script tourne en arriere-plan.
-  Apres execution: DECONNECTE-TOI et reconnecte-toi pour voir l'inventaire.
+    4. purchaseEgg en boucle (Heartbeat-based, non-bloquant) pour le reste
+  Usage: execute via PocketMCP (Xeno). Le script tourne en arriere-plan
+         via RunService.Heartbeat (ne freeze PAS le jeu).
+  Apres execution: DECONNECTE-TOI et reconnecte-toi pour voir l''inventaire.
 ]]
 
 local rs = game:GetService("ReplicatedStorage")
 local ev = require(rs.Services.Communication.event)
-
--- compatibilite task / wait
-local spawnFn = (typeof(task) == "table" and task.spawn) or spawn
-local waitFn = (typeof(task) == "table" and task.wait) or wait
+local RS = game:GetService("RunService")
 
 local EGGS = {"Starter", "Expensive", "New", "Furry"}
 local PETS = {
@@ -39,7 +37,7 @@ safe(function() ev.remoteFire("purchaseEgg", "Furry", -100000) end)
 -- 2. unlock tous les oeufs
 for _, egg in ipairs(EGGS) do
     safe(function() ev.remoteFire("unlockEgg", egg) end)
-    waitFn(0.2)
+    task.wait(0.2)
 end
 
 -- 3. buyRestrictedPet pour chaque pet connu (DirectPrice)
@@ -51,24 +49,26 @@ for egg, list in pairs(PETS) do
                 bought = bought + 1
             end
         end)
-        waitFn(0.1)
+        task.wait(0.1)
     end
 end
 
--- 4. ouvre en boucle pour les pets sans DirectPrice + Furry
+-- 4. ouvre en boucle (Heartbeat-based, 1 oeuf par frame -> non-bloquant)
 local function openLoop(egg, n)
-    for i = 1, n do
+    local count = 0
+    local conn
+    conn = RS.Heartbeat:Connect(function()
+        if count >= n then
+            if conn then conn:Disconnect() end
+            return
+        end
         safe(function() ev.remoteFire("purchaseEgg", egg, 1) end)
-        if i % 20 == 0 then waitFn(0.3) end
-    end
+        count = count + 1
+    end)
 end
 
--- lance en arriere-plan pour ne pas freeze le jeu
-spawnFn(function()
-    for _, egg in ipairs(EGGS) do
-        openLoop(egg, 250)
-    end
-    print("[Unlocker] Termine! Tous les pets sont dans ton compte. Reconnecte-toi pour les voir.")
-end)
+for _, egg in ipairs(EGGS) do
+    openLoop(egg, 250)
+end
 
-return "Unlocker demarre en arriere-plan. Pets directs achetables: " .. bought
+return "Unlocker demarre (Heartbeat, non-bloquant). Pets directs achetables: " .. bought
