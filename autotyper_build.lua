@@ -76,7 +76,7 @@ local function typeChar(c)
     elseif c == "\b" then
         ev.fire("tryKeystroke", -1)
     else
-        ev.fire("tryKeystroke", c:lower())
+        ev.fire("tryKeystroke", c:upper())
     end
 end
 
@@ -86,7 +86,7 @@ local function typeWord(word)
         -- copie directe: on efface puis on envoie tout d'un coup (instant)
         for _ = 1, 40 do ev.fire("tryKeystroke", -1) end
         for i = 1, #word do
-            ev.fire("tryKeystroke", word:sub(i, i):lower())
+            ev.fire("tryKeystroke", word:sub(i, i):upper())
         end
         task.wait(0.05)
         ev.fire("tryAnswer")
